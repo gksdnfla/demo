@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Demo</title>
+	<style>
+		body,ul,li {
+			margin:0;
+			padding:0;
+			list-style:none;
+		}
+		a {
+			text-decoration:none;
+			color:#222;
+		}
+		ul {
+			width:400px;
+			padding-left:50px;
+			position:absolute;
+			left:50%;
+			top:50%;
+			transform:translate(-50%,-50%);
+		}
+		ul:after {
+			content:"";
+			display:block;
+			clear:both;
+		}
+		ul li {
+			width:150px;
+			height:50px;
+			float:left;
+			margin-right:50px;
+			margin-bottom:30px;
+		}
+		ul li a {
+			height:48px;
+			line-height:48px;
+			text-align:center;
+			border:1px solid #222;
+			border-radius:3px;
+			display:block;
+			overflow:hidden;
+		}
+		ul li:hover a {
+			border-color:#999;
+			color:#999;
+			line-height:46px;
+		}
+	</style>
+</head>
+<body>
+	<ul>
+		<li><a href="./album/index.html">3D相册</a></li>
+		<li><a href="./banner/blast.html">爆炸轮播图</a></li>
+		<li><a href="./banner/flip.html">翻牌轮播图</a></li>
+		<li><a href="./banner/page.html">反页轮播图</a></li>
+		<li><a href="./banner/twist.html">扭曲轮播图</a></li>
+		<li><a href="./canvasBg/canvasBg.html">粒子链接动画</a></li>
+	</ul>
+</body>
+</html>

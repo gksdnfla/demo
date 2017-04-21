@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BlastBanner</title>
+    <style>
+        body{ overflow:hidden;}
+        * { margin:0; padding:0; list-style:none;}
+        #banner {
+            width:800px;
+            height:450px;
+            margin:50px auto;
+            position:relative;
+            transform-style:preserve-3d;
+        }
+        #banner .blast {
+            float:left;
+            background-repeat:no-repeat;
+            transform-style:preserve-3d;
+        }
+        #banner a {
+            width:40px;
+            height:60px;
+            position:absolute;
+            top:50%;
+            margin-top:-30px;
+            background-image:url(./images/icon_sprice.png);
+            background-repeat:no-repeat;
+            background-color:rgba(0,0,0,0.5);
+        }
+        #banner a.prev {
+            background-position:-45px 0px;
+            left:10px;
+        }
+        #banner a.next {
+            background-position:-45px -60px;
+            right:10px;
+        }
+        #banner ul {
+            position:absolute;
+            left:50%;
+            bottom:10px;
+        }
+        #banner ul li {
+            width:15px;
+            height:5px;
+            background:#fff;
+            float:left;
+            margin:0 5px;
+        }
+        #banner ul li.active {
+            background-color:#222;
+        }
+    </style>
+
+</head>
+<body>
+<div id="banner">
+</div>
+<script>
+    function banner3D(options){
+        this.element = document.getElementById(options.id);
+        this.bgImg = options.bgImg;
+        this.col = 8;
+        this.row = 5;
+        this.aniTime = options.aniTime || 500;
+        this.rndTime = options.rndTime || 200;
+        this.index = 0;
+        this.autoTime = 0;
+        this.switch = false;
+        this.timer = null;
+        this.createDiv();
+    }
+    banner3D.prototype.createDiv = function(){
+        var _this = this;
+        var arr = ['prev','next'];
+        for(var r=0;r<this.row;r++){
+            for(var c=0;c<this.col;c++){
+                var oBox = document.createElement('div');
+                oBox.className = 'blast';
+                oBox.style.width = parseInt(getStyle(this.element,'width'))/this.col+'px';
+                oBox.style.height = parseInt(getStyle(this.element,'height'))/this.row+'px';
+                oBox.style.backgroundImage = 'url(./images/'+this.bgImg[this.index]+')';
+                oBox.col = c;
+                oBox.row = r;
+                this.element.appendChild(oBox);
+                oBox.style.backgroundPosition = oBox.offsetWidth*-c+'px '+oBox.offsetHeight*-r+'px';
+            }
+        }
+        for(var i=0;i<2;i++){
+            var oBtn = document.createElement('a');
+            oBtn.className = arr[i];
+            oBtn.href = 'javascript:;';
+            if(i == 0){
+                oBtn.onclick = function(){
+                    if(_this.switch) return;
+                    _this.switch = true;
+                    _this.prev();
+                    if(_this.autoTime){
+                        clearInterval(_this.timer);
+                        _this.autoPlay(_this.autoTime);
+                    }
+                }
+            }
+            else if(i == 1){
+                var bb = 0;
+                oBtn.onclick = function(){
+                    if(_this.switch) return;
+                    _this.switch = true;
+                    _this.next();
+                    if(_this.autoTime){
+                        clearInterval(_this.timer);
+                        _this.autoPlay(_this.autoTime);
+                    }
+                }
+            }
+            this.element.appendChild(oBtn);
+        }
+        var oUl = document.createElement('ul');
+        for(var i=0;i<this.bgImg.length;i++){
+            var oLi = document.createElement('li');
+            oUl.appendChild(oLi);
+        }
+        this.element.appendChild(oUl);
+        oUl.style.marginLeft = -oUl.offsetWidth/2+'px';
+        oUl.children[0].className = 'active';
+    }
+    banner3D.prototype.move = function(obj){
+        for(var i=0;i<obj.length-3;i++){
+            obj[i].style.transition = this.aniTime+'ms '+rnd(0,this.rndTime)+'ms';
+            obj[i].style.transform = 'perspective(800px)' +
+                                     'translateX('+(obj[i].col-this.col/2)*40+'px) ' +
+                                     'translateY('+(obj[i].row-this.row/2)*40+'px) ' +
+                                     'translateZ(800px) ' +
+                                     'rotateX('+rnd(0,180)+'deg) ' +
+                                     'rotateY('+rnd(0,180)+'deg) ';
+            obj[i].style.transformStyle = 'preserve-3d';
+            obj[i].style.opacity = '0';
+        }
+    }
+    banner3D.prototype.setIndex = function(){
+        var aLi = this.element.getElementsByTagName('ul')[0].children;
+        for(var i=0;i<this.bgImg.length;i++){
+            aLi[i].className = '';
+        }
+        aLi[this.index].className = 'active';
+    }
+    banner3D.prototype.clearMove = function(obj){
+        this.element.style.background = 'none';
+        for(var i=0;i<obj.length-3;i++){
+            obj[i].style.transition = '';
+            obj[i].style.transform = '';
+            obj[i].style.opacity = '1';
+        }
+    }
+    banner3D.prototype.prev = function(){
+        this.index--;
+        if(this.index<0){
+            this.index = this.bgImg.length-1;
+        }
+        this.nextImg(this.element);
+    }
+    banner3D.prototype.next = function(){
+        this.index++;
+        this.index %= this.bgImg.length;
+        this.nextImg(this.element);
+    }
+    banner3D.prototype.nextImg = function(obj){
+        var _this = this;
+        if(obj.length){
+            for(var i=0;i<obj.length-3;i++){
+                obj[i].style.backgroundImage = 'url(./images/'+this.bgImg[this.index]+')';
+            }
+        }
+        else{
+            obj.style.backgroundImage = 'url(./images/'+this.bgImg[this.index]+')';
+            this.move(this.element.children);
+            window.setTimeout(function(){
+                _this.nextImg(_this.element.children);
+                _this.clearMove(_this.element.children);
+                _this.setIndex();
+                _this.switch = false;
+            },this.aniTime+this.rndTime);
+        }
+    }
+    banner3D.prototype.autoPlay = function(time){
+        var _this = this;
+        this.autoTime = time;
+        this.timer = window.setInterval(function(){
+            _this.next();
+        },time);
+    }
+    function getStyle(obj,name){
+        return obj.currentStyle||window.getComputedStyle(obj,false)[name];
+    }
+    function rnd(min,max){
+        return parseInt(Math.random()*(max-1-min)+min);
+    }
+    var bgImg = ['1.jpg','2.jpg','3.jpg','4.jpg','5.jpg'];
+    var banner = new banner3D({ id:'banner', bgImg:bgImg});
+    banner.autoPlay(5000);
+</script>
+</body>
+</html>

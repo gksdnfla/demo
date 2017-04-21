@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>粒子链接动画</title>
+		<style>
+			body{ margin:0;}
+		</style>
+	</head>
+	<body>
+		<canvas id="cvs" style="width:100%; height:100%;"></canvas>
+		<script>
+			(function(){
+				/*
+				 * 背景
+				 */
+				var canvas = document.getElementById('cvs');
+				var cvs = canvas.getContext('2d');
+				var mousePos = {x:null,y:null,max:20000};
+				function resize() {
+					canvas.width = canvas.offsetWidth;
+					canvas.height = canvas.offsetHeight;
+				}
+				resize();
+				window.onresize = resize;
+				var REF = (function(){
+					return window.requestAnimationFrame|| window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function(callback){
+								window.setTimeout(callback,1000/60);
+							}
+				})();
+				var particle = [];
+				for(var i=0;i<300;i++){
+					var x = Math.random() * canvas.width;
+					var y = Math.random() * canvas.height;
+					var speedX = Math.random() * 2 - 1;
+					var speedY = Math.random() * 2 - 1;
+					particle.push({
+						x: x,
+						y: y,
+						speedX: speedX,
+						speedY: speedY,
+						max: 5000
+					});
+				}
+				setTimeout(function() {
+					animation();
+				}, 100);
+				function animation(){
+					cvs.clearRect(0, 0, canvas.width, canvas.height);
+					for(var i=0;i<particle.length;i++){
+						particle[i].x += particle[i].speedX;
+						particle[i].y += particle[i].speedY;
+						particle[i].speedX *= (particle[i].x<0 || particle[i].x>canvas.width) ? -1 : 1;
+						particle[i].speedY *= (particle[i].y<0 || particle[i].y>canvas.height) ? -1 : 1;
+
+						cvs.fillRect(particle[i].x, particle[i].y, 1, 1);
+						for(var j=0;j<particle.length;j++){
+							if(particle[i] === particle[j])
+								continue;
+
+							var rangeX = particle[i].x - particle[j].x;
+							var rangeY = particle[i].y - particle[j].y;
+
+							var dis = rangeX*rangeX+rangeY*rangeY;
+							if(dis < particle[j].max){
+								var ratio = (particle[j].max - dis) / particle[j].max;
+
+								cvs.beginPath();
+								cvs.lineWidth = ratio / 3;
+								cvs.strokeStyle = 'raba(0,0,0,'+(ratio+0.2)+')';
+								cvs.moveTo(particle[i].x,particle[i].y);
+								cvs.lineTo(particle[j].x,particle[j].y);
+								cvs.stroke();
+							}
+						}
+					}
+					REF(animation);
+				}
+			})();
+		</script>
+	</body>
+</html>

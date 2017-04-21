@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TwistBanner</title>
+    <style>
+        body{ overflow:hidden;}
+        * { margin:0; padding:0; list-style:none;}
+        #banner {
+            width:800px;
+            height:450px;
+            margin:50px auto;
+            position:relative;
+        }
+        #banner .img {
+            width:100%;
+            height:100%;
+            transform-style:preserve-3d;
+            perspective:800px;
+        }
+        #banner .img .twist {
+            height:100%;
+            float:left;
+            position:relative;
+            transform-style:preserve-3d;
+        }
+        #banner .img .twist div {
+            position:absolute;
+            height:100%;
+            left:0;
+            top:0;
+            background:#eee;
+        }
+        #banner .img .twist div.front {
+            width:100%;
+        }
+        #banner .img .twist div.up {
+            width:100%;
+            transform-origin:bottom center;
+        }
+        #banner .img .twist div.left{
+            transform-origin:left center;
+        }
+        #banner .img .twist div.right{
+            transform-origin:left center;
+        }
+        #banner a {
+            width:40px;
+            height:60px;
+            position:absolute;
+            top:50%;
+            margin-top:-30px;
+            background-image:url(./images/icon_sprice.png);;;;
+            background-repeat:no-repeat;
+            background-color:rgba(0,0,0,0.5);
+        }
+        #banner a.prev {
+            background-position:-45px 0px;
+            left:10px;
+        }
+        #banner a.next {
+            background-position:-45px -60px;
+            right:10px;
+        }
+        #banner ul {
+            position:absolute;
+            left:50%;
+            bottom:10px;
+        }
+        #banner ul li {
+            width:15px;
+            height:5px;
+            background:#fff;
+            float:left;
+            margin:0 5px;
+        }
+        #banner ul li.active {
+            background-color:#222;
+        }
+    </style>
+</head>
+<body>
+<div id="banner">
+    <div class="img"></div>
+</div>
+<script>
+    function banner3D(options){
+        this.element = document.getElementById(options.id);
+        this.bgImg = options.bgImg;
+        this.col = 6;
+        this.row = 4;
+        this.aniTime = options.aniTime || 500;
+        this.rndTime = options.rndTime || 200;
+        this.index = 0;
+        this.switch = false;
+        this.autoTime = 0;
+        this.createDiv();
+    }
+    banner3D.prototype.createDiv = function(){
+        var _this = this;
+        var arr = ['prev','next'];
+        var classArr = ['front','up','left','right'];
+        for(var i=0;i<this.col;i++){
+            var oBox = document.createElement('div');
+            var box = this.element.children[0];
+            oBox.className = 'twist';
+            oBox.style.width = parseInt(getStyle(this.element,'width'))/this.col+'px';
+            oBox.innerHTML = '<div></div><div></div><div></div><div></div>';
+            box.appendChild(oBox);
+            for(var j=0;j<classArr.length;j++){
+                oBox.children[j].className = classArr[j];
+            }
+            oBox.children[0].style.backgroundImage = 'url(./images/'+this.bgImg[this.index]+')';
+            console.log(this.bgImg[this.index]);
+            oBox.children[0].style.backgroundPosition = -i*oBox.children[0].offsetWidth+'px 0';
+            oBox.children[1].style.backgroundImage = 'url(./images/'+this.bgImg[this.index+1]+')';
+            oBox.children[1].style.backgroundPosition = -i*oBox.children[0].offsetWidth+'px 0';
+            oBox.children[1].style.transform = 'rotateX(-90deg) translateZ('+-oBox.offsetHeight+'px) scale(1,-1)';
+            oBox.children[2].style.width = oBox.offsetHeight+'px';
+            oBox.children[2].style.transform = 'rotateY(-90deg) translateX('+-oBox.offsetHeight+'px)';
+            oBox.children[3].style.width = oBox.offsetHeight+'px';
+            oBox.children[3].style.transform = 'rotateY(-90deg) translateZ('+-oBox.offsetWidth+'px) translateX('+-oBox.offsetHeight+'px)';
+            oBox.style.transformOrigin = 'bottom center';
+        }
+        for(var i=0;i<2;i++){
+            var oBtn = document.createElement('a');
+            oBtn.className = arr[i];
+            oBtn.href = 'javascript:;';
+            if(i == 0){
+                oBtn.onclick = function(){
+                    if(_this.switch) return;
+                    _this.switch = true;
+                    _this.prev();
+                    if(_this.autoTime){
+                        clearInterval(_this.timer);
+                        _this.autoPlay(_this.autoTime);
+                    }
+                }
+            }
+            else if(i == 1){
+                var bb = 0;
+                oBtn.onclick = function(){
+                    if(_this.switch) return;
+                    _this.switch = true;
+                    _this.next();
+                    if(_this.autoTime){
+                        clearInterval(_this.timer);
+                        _this.autoPlay(_this.autoTime);
+                    }
+                }
+            }
+            this.element.appendChild(oBtn);
+        }
+        var oUl = document.createElement('ul');
+        for(var i=0;i<this.bgImg.length;i++){
+            var oLi = document.createElement('li');
+            oUl.appendChild(oLi);
+        }
+        this.element.appendChild(oUl);
+        oUl.style.marginLeft = -oUl.offsetWidth/2+'px';
+        oUl.children[0].className = 'active';
+    }
+    banner3D.prototype.move = function(obj){
+        for(var i=0;i<obj.length;i++){
+            obj[i].style.transition = '300ms';
+            obj[i].style.transform = 'translateZ(-100px)';
+        }
+        window.setTimeout(function(){
+            for(var i=0;i<obj.length;i++){
+                obj[i].style.transition = '700ms '+i*100+'ms';
+                obj[i].style.transform = 'rotateX(-90deg) translateY(450px)';
+            }
+        },300);
+    }
+    banner3D.prototype.clearMove = function(obj){
+        this.element.style.background = 'none';
+        for(var i=0;i<obj.length;i++){
+            obj[i].style.transition = '';
+            obj[i].style.transform = '';
+            obj[i].style.opacity = '1';
+        }
+    }
+    banner3D.prototype.prev = function(){
+        this.index--;
+        if(this.index < 0){
+            this.index = this.bgImg.length-1;
+        }
+        for(var i=0;i<this.col;i++){
+            this.element.children[0].children[i].children[1].style.backgroundImage = 'url(./images/'+this.bgImg[this.index]+')';
+        }
+        this.move(this.element.children[0].children);
+        this.nextImg(this.element.children[0].children);
+        this.setIndex();
+    }
+    banner3D.prototype.next = function(){
+        this.index++;
+        this.index %= this.bgImg.length;
+        this.move(this.element.children[0].children);
+        this.nextImg(this.element.children[0].children);
+        this.setIndex();
+    }
+    banner3D.prototype.setIndex = function(){
+        var aLi = this.element.getElementsByTagName('ul')[0].children;
+        for(var i=0;i<this.bgImg.length;i++){
+            aLi[i].className = '';
+        }
+        aLi[this.index].className = 'active';
+    }
+    banner3D.prototype.nextImg = function(obj){
+        var _this = this;
+        window.setTimeout(function(){
+            for(var i=0;i<obj.length;i++){
+                obj[i].children[0].style.backgroundImage = 'url(./images/'+_this.bgImg[_this.index]+')';
+                obj[i].children[1].style.backgroundImage = 'url(./images/'+_this.bgImg[(_this.index+1)%_this.bgImg.length]+')';
+            }
+            _this.clearMove(_this.element.children[0].children);
+            _this.switch = false;
+        },(this.col-1)*100+700+300);
+    }
+    banner3D.prototype.autoPlay = function(time){
+        var _this = this;
+        this.autoTime = time;
+        this.timer = window.setInterval(function(){
+            _this.next();
+        },time);
+    }
+    function getStyle(obj,name){
+        return obj.currentStyle||window.getComputedStyle(obj,false)[name];
+    }
+    function rnd(min,max){
+        return parseInt(Math.random()*(max-1-min)+min);
+    }
+    var bgImg = ['1.jpg','2.jpg','3.jpg','4.jpg','5.jpg'];
+    var banner = new banner3D({ id:'banner', bgImg:bgImg, mode:'move4'});
+    banner.autoPlay(5000);
+</script>
+</body>
+</html>

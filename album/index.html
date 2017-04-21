@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body { margin:0; background:#000;}
+        ul,li { padding:0; list-style:none; margin:0;}
+        #banner { perspective:1200px;}
+        #banner>ul { position:relative; transform-style:preserve-3d; transform:rotateX(-20deg);}
+        #banner>ul>li { width:100%; height:100%; position:absolute; left:0; top:0; border-radius:5px; box-shadow:0 0 5px 2px #fff;}
+    </style>
+    <script>
+        window.onload = function(){
+            var arr = ['image/1.jpg','image/2.jpg','image/3.jpg','image/4.jpg','image/5.jpg','image/6.jpg','image/7.jpg','image/8.jpg','image/9.jpg','image/10.jpg']
+            var oBanner = document.getElementById('banner');
+            var oUl = oBanner.children[0];
+            var aImg = oUl.children;
+            oUl.style.width = '133px';
+            oUl.style.height = '200px';
+            oUl.style.margin = '130px auto';
+            oUl.degY = 0;
+            oUl.degX = 0;
+            oUl.speedX = 0;
+            oUl.speedY = 0;
+            var clientX = 0;
+            var clientY = 0;
+            for(var i=0;i<arr.length;i++){
+                var oLi = document.createElement('li');
+                oLi.style.backgroundImage = 'url('+arr[i]+')';
+                oLi.style.transition = '0.7s '+(arr.length-i)*0.2+'s';
+                oLi.deg = i*360/arr.length;
+                (function(oLi,index){
+                    setTimeout(function(){
+                        oLi.style.transform = 'rotateY('+index*360/arr.length+'deg) translateZ(300px)';
+                    });
+                })(oLi,i);
+                oUl.appendChild(oLi);
+            }
+            aImg[aImg.length-1].addEventListener('transitionend',function(){
+                for(var i=0;i<arr.length;i++){
+                    aImg[i].style.transition = '0.7s';
+                    aImg[i].style.opacity = Math.abs(Math.abs((aImg[i].deg+oUl.degY)%360)-180)/180+0.2;
+                }
+            },false);
+            document.onmousedown = function(ev){
+                var oEvent = ev || window.event;
+                var firstX = oEvent.clientX;
+                var firstY = oEvent.clientY;
+                var firstDegX = oUl.degX;
+                var firstDegY = oUl.degY;
+                document.onmousemove = function(ev){
+                    var oEvent = ev || window.event;
+                    oUl.degY = (oEvent.clientX-firstX)*0.2+firstDegY;
+                    oUl.degX = -(oEvent.clientY-firstY)*0.2+firstDegX;
+                    for(var i=0;i<arr.length;i++){
+                        aImg[i].style.opacity = Math.abs(Math.abs((aImg[i].deg+oUl.degY)%360)-180)/180+0.2;
+                    }
+                    oUl.style.transform = 'rotateX('+(oUl.degX-20)+'deg) rotateY('+oUl.degY+'deg)';
+                    oUl.speedY = oEvent.clientX-clientX;
+                    oUl.speedX = oEvent.clientY-clientY;
+                    clientX = oEvent.clientX;
+                    clientY = oEvent.clientY;
+                }
+                document.onmouseup = function(){
+                    document.onmousemove=document.onmouseup=null;
+                    clearInterval(oUl.timer);
+                    oUl.timer = setInterval(function(){
+                        oUl.speedX *= 0.9;
+                        oUl.speedY *= 0.9;
+                        oUl.degX -= oUl.speedX;
+                        oUl.degY += oUl.speedY;
+                        oUl.style.transform = 'rotateX('+(oUl.degX-20)+'deg) rotateY('+oUl.degY+'deg)';
+                        for(var i=0;i<arr.length;i++){
+                            aImg[i].style.opacity = Math.abs(Math.abs((aImg[i].deg+oUl.degY)%360)-180)/180+0.2;
+                        }
+                        if(Math.abs(oUl.speedX) < 0.5 && Math.abs(oUl.speedY) < 0.5){
+                            clearInterval(oUl.timer);
+                        }
+                    },16);
+                }
+                return false;
+            }
+        }
+    </script>
+</head>
+<body>
+<div id="banner">
+    <ul></ul>
+</div>
+</body>
+</html>
